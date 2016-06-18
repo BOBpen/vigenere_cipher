@@ -10,7 +10,15 @@
 
 #define KEY_LENGTH 2 // Can be anything from 1 to 13
 
+int vigenereEncrypt();
+int vigenereDecrypt();
+
 int main(int argc, const char * argv[]) {
+    vigenereEncrypt();
+    vigenereDecrypt();
+}
+
+int vigenereEncrypt() {
     unsigned char ch;
     FILE *fpIn, *fpOut;
     int i;
@@ -31,9 +39,14 @@ int main(int argc, const char * argv[]) {
             fprintf(fpOut, "%02X", ch ^ key[i % KEY_LENGTH]); // ^ is logical XOR
             i++;
         }
-    }   
+    }
     
-    fclose(fpIn);  
-    fclose(fpOut);  
+    fclose(fpIn);
+    fclose(fpOut);
+    return 0;
+}
+
+int vigenereDecrypt() {
+    
     return 0;
 }
