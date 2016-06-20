@@ -11,7 +11,7 @@
 #include <string.h>
 #include <assert.h>
 
-#define KEY_LENGTH 2 // Can be anything from 1 to 13
+#define KEY_LENGTH 4 // Can be anything from 1 to 13
 #define MIN_KEY_LENGTH 1
 #define MAX_KEY_LENGTH 13
 
@@ -27,8 +27,7 @@ int vigenereEncrypt() {
     unsigned char ch;
     FILE *fpIn, *fpOut;
     int i;
-    unsigned char key[KEY_LENGTH] = {0x00, 0x00};
-    /* of course, I did not use the all-0s key to encrypt */
+    unsigned char key[KEY_LENGTH] = {0x6C, 0x75, 0x6B, 0x65}; // luke
     
     fpIn = fopen("ptext.txt", "r");
     if (fpIn == NULL) {
@@ -61,7 +60,8 @@ int vigenereEncrypt() {
 int crackVigenere() {
 
     // Open the ciphertext to decrypt
-    FILE *cipherFile = fopen("ciphertext.txt", "r");
+    //FILE *cipherFile = fopen("ciphertext.txt", "r");
+    FILE *cipherFile = fopen("ctext.txt", "r");
     if (cipherFile == NULL) {
         return 1;
     }
@@ -81,6 +81,9 @@ int crackVigenere() {
     
     unsigned char *stream = malloc(sizeof(char) * size);
     unsigned char *result = malloc(sizeof(char) * size);
+    size_t *frequency = malloc(sizeof(size_t) * 256);
+    size_t summations[MAX_KEY_LENGTH];
+    memset(summations, 0, sizeof(size_t) * MAX_KEY_LENGTH);
     
     // So we have to try every possible key length
     // Make sure we are operating on valid key lengths
@@ -90,12 +93,30 @@ int crackVigenere() {
 
         memset(stream, 0x00, size);
         memset(result, 0x00, size);
+        memset(frequency, 0, sizeof(size_t) * 256);
         
         // Pick out every n'th character of the ciphertext
-        for (size_t i = n - 1, j = 0; i < size; i += n, ++j) {
-            stream[j] = cipherStream[i];
+        size_t j = 0; // This will be the length of the stream
+        for (size_t i = n - 1; i < size; i += n) {
+            stream[j++] = cipherStream[i];
         }
         
+        // For each position in stream, record the frequency of each byte
+        for (size_t i = 0; i < j; ++i) {
+            frequency[stream[i]] += 1;
+        }
+        
+        // Compute the summation of qi squared
+        size_t summation = 0;
+        for (size_t i = 0; i < 256; ++i) {
+            frequency[i] *= frequency[i];
+            summation += frequency[i];
+        }
+        
+        summations[n - 1] = summation;
+    }
+    
+        /*
         // Try decrypting the stream using every possible byte value b
         int test = 0;
         for (unsigned char b = 0x20; b < 0x7F; ++b) { // Can improve if key is English (32 - 127 only)
@@ -116,7 +137,7 @@ int crackVigenere() {
                 continue;
             }
             
-            
+            b = b * b;
             
             
             // Frequencies of lowercase letters (as a fraction of all lowercase
@@ -126,7 +147,7 @@ int crackVigenere() {
         
         // Compute the frequencies of each byte in this selection
     }
-    
+    */
     fclose(cipherFile);
     free(stream);
     
