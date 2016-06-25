@@ -62,8 +62,8 @@ int vigenereEncrypt() {
 int crackVigenere() {
 
     // Open the ciphertext to decrypt
-    FILE *cipherFile = fopen("ciphertext.txt", "r");
-    //FILE *cipherFile = fopen("ctext.txt", "r");
+    //FILE *cipherFile = fopen("ciphertext.txt", "r");
+    FILE *cipherFile = fopen("ctext.txt", "r");
     if (cipherFile == NULL) {
         return 1;
     }
@@ -81,7 +81,10 @@ int crackVigenere() {
         return 1;
     }
     
-    unsigned char *stream = malloc(sizeof(char) * size);
+    // Allocate the stream such that it can be used later for holding the cipher
+    // text based on key length
+    const size_t streamSize = size + (MAX_KEY_LENGTH - (size % MAX_KEY_LENGTH));
+    unsigned char *stream = malloc(sizeof(char) * streamSize);
     size_t *frequency = malloc(sizeof(size_t) * KEY_SPACE);
     double summations[MAX_KEY_LENGTH];
     memset(summations, 0, sizeof(double) * MAX_KEY_LENGTH);
@@ -96,7 +99,7 @@ int crackVigenere() {
         
         // For each position in the key (ki...kn)
         for (size_t k = 0; k < n; ++k) {
-            memset(stream, 0x00, size);
+            memset(stream, 0x00, streamSize);
             memset(frequency, 0, sizeof(size_t) * KEY_SPACE);
             
             size_t j = 0; // This will be the length of the stream
@@ -122,12 +125,67 @@ int crackVigenere() {
     
     double max = 0.;
     size_t keyLength = 0;
-    for (size_t i = MIN_KEY_LENGTH - 1; i < MAX_KEY_LENGTH - 1; ++i) {
+    for (size_t i = MIN_KEY_LENGTH - 1; i < MAX_KEY_LENGTH; ++i) {
         if (max < summations[i]) {
             max = summations[i];
             keyLength = i + 1; // Add 1 to adjust for 0 based indexing.
         }
     }
+    
+    memset(stream, 0x00, streamSize);
+    
+    // Load the cipher text grouped by ci where ki was used as the shift
+    const size_t keyMemorySize = (size + (keyLength - (size % keyLength))) / keyLength;
+    for (size_t n = 0; n < keyLength; ++n) {
+        size_t j = keyMemorySize * n;
+        for (size_t i = 0 + n; i < size; i += keyLength) {
+            stream[j++] = cipherStream[i];
+        }
+
+    }
+    
+    // Now we take each of the byte sets and apply the same shift over all of
+    // them, followed by a frequency analysis. If we get something close to
+    // english we can accept this shift amount and continue to the next key
+    // shift.
+    for (size_t n = 0; n < keyLength; ++n) {
+        // For each position in stream, record the frequency of each byte
+        for (size_t i = 0; i < keyMemorySize; ++i) {
+            frequency[stream[i]] += 1;
+        }
+        
+        size_t summation = 0.;
+        for (size_t i = 0; i < KEY_SPACE; ++i) { // Could improve by slightly limiting this loop (65-127?)
+            summation += frequency[i] * (frequency[i] - 1);
+        }
+        
+        averageSummation += (double)summation / (j * (j - 1));
+    }
+    
+    /*
+    for (size_t i = 0; i < size; i += keyLength) {
+        for (unsigned char b = 0x00; b < 0xFF; ++b) { // Can improve if key is English (32 - 127 only)
+            size_t keepGoing = 1;
+            for (size_t j = 0; j < size; ++j) {
+                stream[j] = cipherStream[i] ^ b;
+                
+                // When the guess 'b' is correct, all bytes in the plaintext
+                // stream will between 32 and 127 (ASCII values of the English
+                // alphabet)
+                if ((stream[j] < 0x20) || (stream[j] > 0x7F)) {
+                    keepGoing = 0;
+                    break;
+                }
+            }
+            if (!keepGoing) {
+                continue;
+            }
+            
+            // If we get here, all bytes in the plaintext stream will be 'readable'
+        }
+        
+        return 0;
+    }*/
 
     return 0;
     
