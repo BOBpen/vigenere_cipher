@@ -94,6 +94,7 @@ int crackVigenere() {
         
         double averageSummation = 0.;
         
+        // For each position in the key (ki...kn)
         for (size_t k = 0; k < n; ++k) {
             memset(stream, 0x00, size);
             memset(frequency, 0, sizeof(size_t) * KEY_SPACE);
@@ -121,13 +122,14 @@ int crackVigenere() {
     
     double max = 0.;
     size_t keyLength = 0;
-    for (size_t i = 0; i < 256; ++i) {
+    for (size_t i = MIN_KEY_LENGTH - 1; i < MAX_KEY_LENGTH - 1; ++i) {
         if (max < summations[i]) {
             max = summations[i];
             keyLength = i + 1; // Add 1 to adjust for 0 based indexing.
         }
     }
 
+    return 0;
     
         /*
         // Try decrypting the stream using every possible byte value b
