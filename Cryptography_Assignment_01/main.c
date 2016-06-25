@@ -14,6 +14,8 @@
 #define KEY_LENGTH 4 // Can be anything from 1 to 13
 #define MIN_KEY_LENGTH 1
 #define MAX_KEY_LENGTH 13
+#define KEY_SPACE 256
+#define ENGLISH_LETTER_FREQUENCY 1.
 
 int vigenereEncrypt();
 int crackVigenere();
@@ -60,8 +62,8 @@ int vigenereEncrypt() {
 int crackVigenere() {
 
     // Open the ciphertext to decrypt
-    //FILE *cipherFile = fopen("ciphertext.txt", "r");
-    FILE *cipherFile = fopen("ctext.txt", "r");
+    FILE *cipherFile = fopen("ciphertext.txt", "r");
+    //FILE *cipherFile = fopen("ctext.txt", "r");
     if (cipherFile == NULL) {
         return 1;
     }
@@ -80,41 +82,52 @@ int crackVigenere() {
     }
     
     unsigned char *stream = malloc(sizeof(char) * size);
-    unsigned char *result = malloc(sizeof(char) * size);
-    size_t *frequency = malloc(sizeof(size_t) * 256);
-    size_t summations[MAX_KEY_LENGTH];
-    memset(summations, 0, sizeof(size_t) * MAX_KEY_LENGTH);
+    size_t *frequency = malloc(sizeof(size_t) * KEY_SPACE);
+    double summations[MAX_KEY_LENGTH];
+    memset(summations, 0, sizeof(double) * MAX_KEY_LENGTH);
     
-    // So we have to try every possible key length
     // Make sure we are operating on valid key lengths
     assert(MIN_KEY_LENGTH > 0);
     assert(MIN_KEY_LENGTH < MAX_KEY_LENGTH);
+    // So we have to try every possible key length
     for (size_t n = MIN_KEY_LENGTH; n <= MAX_KEY_LENGTH; ++n) {
+        
+        double averageSummation = 0.;
+        
+        for (size_t k = 0; k < n; ++k) {
+            memset(stream, 0x00, size);
+            memset(frequency, 0, sizeof(size_t) * KEY_SPACE);
+            
+            size_t j = 0; // This will be the length of the stream
+            for (size_t i = k; i < size; i += n) { // Start from the ki position
+                stream[j++] = cipherStream[i];
+            }
+            
+            // For each position in stream, record the frequency of each byte
+            for (size_t i = 0; i < j; ++i) {
+                frequency[stream[i]] += 1;
+            }
+            
+            size_t summation = 0.;
+            for (size_t i = 0; i < KEY_SPACE; ++i) { // Could improve by slightly limiting this loop (65-127?)
+                summation += frequency[i] * (frequency[i] - 1);
+            }
+            
+            averageSummation += (double)summation / (j * (j - 1));
+        }
 
-        memset(stream, 0x00, size);
-        memset(result, 0x00, size);
-        memset(frequency, 0, sizeof(size_t) * 256);
-        
-        // Pick out every n'th character of the ciphertext
-        size_t j = 0; // This will be the length of the stream
-        for (size_t i = n - 1; i < size; i += n) {
-            stream[j++] = cipherStream[i];
-        }
-        
-        // For each position in stream, record the frequency of each byte
-        for (size_t i = 0; i < j; ++i) {
-            frequency[stream[i]] += 1;
-        }
-        
-        // Compute the summation of qi squared
-        size_t summation = 0;
-        for (size_t i = 0; i < 256; ++i) {
-            frequency[i] *= frequency[i];
-            summation += frequency[i];
-        }
-        
-        summations[n - 1] = summation;
+        summations[n - 1] = averageSummation / n;
     }
+    
+    double max = 0.;
+    size_t keyLength = 0;
+    for (size_t i = 0; i < 256; ++i) {
+        if (max < summations[i]) {
+            max = summations[i];
+            keyLength = i + 1; // Add 1 to adjust for 0 based indexing.
+        }
+    }
+
     
         /*
         // Try decrypting the stream using every possible byte value b
