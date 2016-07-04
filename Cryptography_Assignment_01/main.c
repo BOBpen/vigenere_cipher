@@ -13,7 +13,7 @@
 
 #define KEY_LENGTH 4 // Can be anything from 1 to 13
 #define MIN_KEY_LENGTH 1
-#define MAX_KEY_LENGTH 4 // Original was 13
+#define MAX_KEY_LENGTH 13 // Original was 13
 #define KEY_SPACE 256
 #define ENGLISH_LETTER_FREQUENCY .065
 
@@ -163,18 +163,21 @@ unsigned char calculateKey(const size_t size, const unsigned char *stream) {
             // When the guess 'b' is correct, all bytes in the plaintext
             // stream will between 32 and 127 (ASCII values of the English
             // alphabet, including punctuation)
-            if ((shiftedStream[j] < 0x20) || (shiftedStream[j] > 0x7E)) {
+            if ((shiftedStream[j] < 0x20) || (shiftedStream[j] > 0x7A)) {
+                foundGuess = 0;
+                break;
+            }
+            if ((shiftedStream[j] == 0x2A ||
+                 shiftedStream[j] == 0x5F ||
+                 shiftedStream[j] == 0x5E ||
+                 shiftedStream[j] == 0x60 ||
+                 shiftedStream[j] == 0x24 )) {
                 foundGuess = 0;
                 break;
             }
         }
         if (foundGuess) {
             guesses[b] = frequencyAnalysis(size, shiftedStream);
-            /*
-            if (frequencyAnalysis(size, shiftedStream)) {
-                free(shiftedStream);
-                return b;
-            }*/
         }
     }
     
@@ -194,8 +197,8 @@ unsigned char calculateKey(const size_t size, const unsigned char *stream) {
 size_t readFile(unsigned char **out) {
     
     // Open the ciphertext to decrypt
-    //FILE *cipherFile = fopen("ciphertext.txt", "r");
-    FILE *cipherFile = fopen("ctext.txt", "r");
+    FILE *cipherFile = fopen("ciphertext.txt", "r");
+    //FILE *cipherFile = fopen("ctext.txt", "r");
     if (cipherFile == NULL) {
         return 0;
     }
