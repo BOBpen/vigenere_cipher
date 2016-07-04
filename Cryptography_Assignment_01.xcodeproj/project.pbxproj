@@ -11,13 +11,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		9208A7E31D160C1800E235F2 /* CopyFiles */ = {
+		9208A7E31D160C1800E235F2 /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
 			);
+			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -71,7 +72,7 @@
 			buildPhases = (
 				9208A7E11D160C1800E235F2 /* Sources */,
 				9208A7E21D160C1800E235F2 /* Frameworks */,
-				9208A7E31D160C1800E235F2 /* CopyFiles */,
+				9208A7E31D160C1800E235F2 /* Copy Files */,
 			);
 			buildRules = (
 			);
@@ -239,6 +240,7 @@
 				9208A7EE1D160C1800E235F2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
