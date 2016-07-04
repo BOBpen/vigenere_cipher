@@ -171,7 +171,10 @@ unsigned char calculateKey(const size_t size, const unsigned char *stream) {
                  shiftedStream[j] == 0x5F ||
                  shiftedStream[j] == 0x5E ||
                  shiftedStream[j] == 0x60 ||
-                 shiftedStream[j] == 0x24 )) {
+                 shiftedStream[j] == 0x24 ||
+                 shiftedStream[j] == 0x26 ||
+                 shiftedStream[j] == 0x23 ||
+                 shiftedStream[j] == 0x2B )) {
                 foundGuess = 0;
                 break;
             }
