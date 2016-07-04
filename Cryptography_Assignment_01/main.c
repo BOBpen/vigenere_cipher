@@ -167,6 +167,8 @@ unsigned char calculateKey(const size_t size, const unsigned char *stream) {
                 foundGuess = 0;
                 break;
             }
+            
+            // Modify this list when examining the output to narrow down guesses
             if ((shiftedStream[j] == 0x2A ||
                  shiftedStream[j] == 0x5F ||
                  shiftedStream[j] == 0x5E ||
@@ -278,12 +280,7 @@ int crackVigenere() {
         }
         groupLengths[n] = k;
     }
-    
-    // Now we take each of the byte sets and apply the same shift over all of
-    // them, followed by a frequency analysis. If we get something close to
-    // english we can accept this shift amount and continue to the next key
-    // shift.
-    
+
     unsigned char *key = calloc(keyLength, sizeof(unsigned char));
     for (size_t n = 0; n < keyLength; ++n) {
         key[n] = calculateKey(groupLengths[n], stream + (n * keyMemorySize));
