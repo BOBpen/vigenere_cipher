@@ -13,7 +13,7 @@
 
 #define KEY_LENGTH 4 // Can be anything from 1 to 13
 #define MIN_KEY_LENGTH 1
-#define MAX_KEY_LENGTH 13 // Original was 13
+#define MAX_KEY_LENGTH 13
 #define KEY_SPACE 256
 #define ENGLISH_LETTER_FREQUENCY .065
 
@@ -25,6 +25,7 @@ int main(int argc, const char * argv[]) {
     crackVigenere();
 }
 
+/* This function was given by the assignment, not mine. */
 int vigenereEncrypt() {
     unsigned char ch;
     FILE *fpIn, *fpOut;
@@ -117,7 +118,6 @@ size_t findKeyLength(const size_t size, const unsigned char *cipherStream) {
  * stream.
  */
 double frequencyAnalysis(const size_t size, const unsigned char *stream) {
-    
     size_t *frequency = malloc(sizeof(size_t) * KEY_SPACE);
     
     for (size_t i = 0; i < size; ++i) {
@@ -135,11 +135,6 @@ double frequencyAnalysis(const size_t size, const unsigned char *stream) {
     const double result = (double)summation / (lowerCaseSize * (lowerCaseSize - 1));
     
     return result;
-    if ((result > ENGLISH_LETTER_FREQUENCY) && (result < 1.)) {
-        return result;
-    } else {
-        return 0;
-    }
 }
 
 /* This function takes all the data encoded by the same character in the key. It
@@ -153,9 +148,6 @@ unsigned char calculateKey(const size_t size, const unsigned char *stream) {
     memset(guesses, 0x00, sizeof(size_t) * KEY_SPACE);
     
     for (unsigned char b = 0x00; b < 0xFF; ++b) { // Can improve if key is English (32 - 127 only)
-        
-        memset(shiftedStream, 0x00, sizeof(char) * size); // REMOVE ME
-        
         size_t foundGuess = 1;
         for (size_t j = 0; j < size; ++j) {
             shiftedStream[j] = stream[j] ^ b;
@@ -169,6 +161,7 @@ unsigned char calculateKey(const size_t size, const unsigned char *stream) {
             }
             
             // Modify this list when examining the output to narrow down guesses
+            // These are characters that shouldn't appear in the plaintext
             if ((shiftedStream[j] == 0x2A ||
                  shiftedStream[j] == 0x5F ||
                  shiftedStream[j] == 0x5E ||
